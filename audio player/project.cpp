@@ -1,0 +1,397 @@
+#include<iostream>
+#include<string>
+#include<windows.h>
+#include<mmsystem.h>
+#include<conio.h>
+#pragma comment(lib,"winmm.lib")
+using namespace std;
+
+class Audio{
+private:
+       string name;
+       string path;
+       string alias;
+public:
+      Audio(string songName,string songPath,string songAlias){
+        name=songName;
+        path=songPath;
+        alias=songAlias;
+      }
+
+      void play(){
+
+        string closeCmd = "close " + alias; 
+        mciSendString(closeCmd.c_str(), NULL, 0, NULL);
+
+        string openCmd = "open \"" + path + "\" alias " + alias;
+         mciSendString(openCmd.c_str(), NULL, 0, NULL);
+        
+        string playCmd = "play " + alias;
+        mciSendString(playCmd.c_str(),NULL,0,NULL);
+      }
+
+      void pause(){
+        string cmd = "pause " + alias;
+        mciSendString(cmd.c_str(),NULL,0,NULL);
+      }
+
+      void resume(){
+        string cmd = "resume " + alias;
+        mciSendString(cmd.c_str(),NULL,0,NULL);
+      }
+      
+      void stop(){
+        string cmd = "close " + alias;
+        mciSendString(cmd.c_str(),NULL,0,NULL);
+      }
+       
+      string getName(){
+        return name;
+      }
+};
+
+
+  struct Node{
+    Audio* data;
+    Node* next;
+    Node* prev;
+    
+    Node(Audio* song){
+        data=song;
+        next=NULL;
+        prev=NULL;
+    }
+
+  };
+
+
+  class PlayList{
+private:
+       string playlistname;
+       Node* head;
+       Node* tail;
+       Node* current;
+public:
+    PlayList(string name){
+      playlistname=name;
+        head=tail=current=NULL;
+    }
+
+    string getname(){
+      return playlistname;
+    }
+
+    void addSong(Audio* song){
+        Node* newnode=new Node(song);
+        if (head==NULL)
+        {
+            head=tail=current=newnode;
+        }
+        else{
+            tail->next=newnode;
+            newnode->prev=tail;
+            tail=newnode;
+        }
+    }
+    
+
+     void displaysong(){
+      if(head==NULL){
+        cout<<"playlist is empty\n";
+        return;
+      }
+
+      Node*temp=head;
+      int i=1;
+      while (temp)
+      {
+        cout<<" "<<i++<<". "<<temp->data->getName()<<" <<"<<endl;
+        temp=temp->next;
+      }
+
+     } 
+     
+     void startplaying(){
+      if(current){
+        cout<<"\n now playing: "<<current->data->getName()<<" "<<endl;
+        current->data->play();
+      }
+      else if(head){
+        current=head;
+        startplaying();
+      }
+      else{
+        cout<<" playlist is empty"<<endl;
+      }
+     }
+
+     void nextsong(){
+      if(current&&current->next){
+        current->data->stop();
+        current=current->next;
+        startplaying();
+      }
+      else{
+        cout<<"end of playlist. "<<endl;
+      }
+     }
+
+     void playprev(){
+        if(current&&current->prev){
+        current->data->stop();
+        current=current->prev;
+        startplaying();
+      }
+      else{
+        cout<<" start of playlist. "<<endl;
+      }
+     }
+      void pausecurrent(){
+      if (current)
+      
+        current->data->pause();
+      }
+
+      void resumecurrent(){
+        if(current){
+          current->data->resume();
+        }
+      }
+
+      void stopcurrent(){
+        if(current){
+        current->data->stop();
+        }
+      }
+    };
+      
+      struct playlistnode{
+        PlayList*data;
+        playlistnode*next;
+        playlistnode*prev;
+
+        playlistnode(PlayList* pl){
+          data=pl;
+          next=prev=NULL;
+        }
+      };
+
+      class playlistManager{
+      private:
+        playlistnode*head;
+        playlistnode* tail;
+      public:
+        playlistManager(){
+          head=tail=NULL;
+        }
+        void addplaylist(string name){
+          PlayList*newPL=new PlayList(name);
+          playlistnode* newNode= new playlistnode(newPL);
+          if(head==NULL){
+            head=tail=newNode;
+          }
+          else{
+            tail->next=newNode;
+            newNode->prev=tail;
+            tail=newNode;
+          }
+          cout<<"\nSUCCESS play list"<<name<<"created.\n";
+
+        }
+        void displayAll(){
+          if(head==NULL){
+            cout<<"\nno playlist available. create one first\n";
+            return;
+          }
+          playlistnode* temp=head;
+          int i=1;
+          while (temp)
+          {
+            cout<<i<<". "<<temp->data->getname()<<endl;
+            temp=temp->next;
+            i++;
+          }
+        }
+
+          PlayList*getplaylistIndex(int index){
+            playlistnode* temp=head;
+            int count=1;
+            while(temp){
+              if (count==index)
+              {
+                return temp->data;
+              }
+              temp=temp->next;
+              count++;   
+            }
+            return NULL;
+          }
+          
+        };
+
+        void drawMenu() {
+    system("cls"); 
+    cout << "\n\t   Audio Player Project\n";
+    cout << "\t     Data Structure Course\n\n";
+    cout << "+=======================================================+\n";
+    cout << "|              MAIN MENU                                |\n";
+    cout << "+=======================================================+\n";
+    cout << "| 1. Create New Playlist                                |\n";
+    cout << "| 2. Add Song to a Playlist                             |\n";
+    cout << "| 3. Display All Playlists                              |\n";
+    cout << "| 4. Display Songs in a Playlist                        |\n";
+    cout << "| 5. PLAY Playlist (Player Mode)                        |\n";
+    cout << "| 6. Exit                                               |\n";
+    cout << "+=======================================================+\n";
+    cout << "Your choice: ";
+}
+      void playermode(PlayList* pl) {
+    system("cls");
+    cout << "--- Player Mode: " << pl->getname() << " ---\n";
+    cout << "\n[Right] Next\n[Left] Prev\n[Up] Pause\n[Down] Resume\n[Q]Quit\n";
+    
+    pl->startplaying();
+
+    int key; 
+
+    while (true) {
+        if (_kbhit()) { 
+            key = _getch();
+
+            if (key == 'q' || key == 'Q') {
+                pl->stopcurrent();
+                break;
+            }
+            
+            else if (key == -32 || key == 224 || key == 0) { 
+                
+                int arrowCode = _getch(); 
+                
+                switch (arrowCode) {
+                 case 77: 
+                        cout << " [Next] ";
+                        pl->nextsong(); 
+                        break;   
+                    case 75: 
+                        cout << " [Prev] ";
+                        pl->playprev(); 
+                        break;   
+                    case 72: 
+                        pl->pausecurrent(); 
+                        cout << "\n(Paused)"; 
+                        break; 
+                    case 80:  
+                        pl->resumecurrent(); 
+                        cout << "\n(Resumed)"; 
+                        break;
+                }
+            }
+        }
+        Sleep(100); 
+    }
+}
+
+
+int main(){
+   playlistManager manager;
+   manager.addplaylist("Mix tape");
+   PlayList*p1=manager.getplaylistIndex(1);
+   if (p1)
+   {
+    p1->addSong(new Audio("Song 1","test.mp3","s1"));
+    p1->addSong(new Audio("Song 2","test2.mp3","s2"));
+     p1->addSong(new Audio("Song 3","test3.mp3","s3"));
+
+   }
+   int choice;
+   while (true)
+   {
+    drawMenu();
+    if (!(cin>>choice))
+    {
+      cin.clear();
+      cin.ignore(1000,'\n');
+      continue;
+    }
+
+    if (choice==6)
+    {
+    break;
+    }
+    switch (choice)
+    {
+    case 1:{
+      cout<<"enter playlist name: ";
+      string name;
+      cin>>name;
+      manager.addplaylist(name);
+      system("pause");
+      break;}
+
+    
+    case 2:{
+      cout<<"\nAvailable playlist:\n";
+      manager.displayAll();
+      cout<<"select playlist id: ";
+      int id;
+      cin>>id;
+      PlayList*pl=manager.getplaylistIndex(id);
+      if(pl){
+        string sName,sPath,sAlias;
+        cout<<"song name: ";
+        cin>>sName;
+        cout<<"file path: ";
+        cin>>sPath;
+        sAlias="a"+to_string(rand());
+        pl->addSong(new Audio(sName,sPath,sAlias));
+        cout<<"song added\n";
+      }
+      else{
+        cout<<"invalid id\n";
+      }
+      system("pause");
+      break;
+    }
+
+    case 3:{
+      manager.displayAll();
+      system("pause");
+      break;
+    }
+
+    case 4:{
+      cout<<"\nSelect playlist to view songs:\n";
+      manager.displayAll();
+      int id;
+      cin>>id;
+      PlayList*pl=manager.getplaylistIndex(id);
+      if(pl){
+        pl->displaysong();
+      }
+      system("pause");
+      break;
+    }
+    case 5:{
+      cout<<"\nSelect playlist to PLAY:\n";
+      manager.displayAll();
+      int id;
+      cin>>id;
+      PlayList*pl=manager.getplaylistIndex(id);
+      if (pl){
+        playermode(pl);
+      }
+      break;
+    }
+    default:
+    cout<<"invalid option.\n";
+    system("pause");
+
+    }
+      
+    
+   }
+   
+   
+    
+    return 0;
+} 
