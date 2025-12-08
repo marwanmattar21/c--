@@ -1,4 +1,5 @@
 #include<iostream>
+#include<fstream>
 #include<string>
 #include<windows.h>
 #include<mmsystem.h>
@@ -47,6 +48,9 @@ public:
        
       string getName(){
         return name;
+      }
+      string getpath(){
+        return path;
       }
 };
 
@@ -163,6 +167,18 @@ public:
         current->data->stop();
         }
       }
+      void saveSongsToFile(ofstream& file){
+        Node* temp=head;
+        while (temp)
+        {
+          file<<temp->data->getName()<<"|"<<temp->data->getpath()<<endl;
+          temp=temp->next;
+        }
+        
+      }
+
+
+
     };
       
       struct playlistnode{
@@ -226,10 +242,66 @@ public:
             }
             return NULL;
           }
+
+          void saveALL(string filename){
+          ofstream file(filename);
+          playlistnode*temp=head;
+          while (temp)
+          {
+            file<<"PLAYLIST:"<<temp->data->getname()<<endl;
+            temp->data->saveSongsToFile(file);
+            file<<"END"<<endl;
+            temp=temp->next;
+          }
+          file.close();
+          cout<<" SUCCESS saved to"<<filename<<endl;
+          }
+
+          void loadALL(string filename){
+          ifstream file(filename);
+          if(!file.is_open()){
+          cout<<"ERROR file is not found"<<endl;
+          return;
+          }
+          string line;
+          PlayList*currentPL=NULL;
+          while (getline(file,line))
+          {
+            if(line.empty())continue;
+
+            if(line.find("PLAYLIST:")==0){
+            string PlName=line.substr(9);
+            addplaylist(PlName);
+            if(tail) currentPL=tail->data;
+            
+            }
+            else if(line=="END"){
+            currentPL=NULL;
+            }
+            else if(currentPL!=NULL){
+            int halfName=line.find('|');
+            if(halfName!=-1){
+            string sname=line.substr(0,halfName);
+            string spath=line.substr(halfName+1);
+            string sAlias="a"+to_string(rand());
+
+            currentPL->addSong(new Audio(sname,spath,sAlias));
+
+
+            }
+            
+            }
+
+ 
+
+          }
+          file.close();
+          cout<<" SUCCESS data loaded succesfully"<<endl;
+          }
           
         };
 
-        void drawMenu() {
+  void drawMenu() {
     system("cls"); 
     cout << "\n\t   Audio Player Project\n";
     cout << "\t     Data Structure Course\n\n";
@@ -241,7 +313,11 @@ public:
     cout << "| 3. Display All Playlists                              |\n";
     cout << "| 4. Display Songs in a Playlist                        |\n";
     cout << "| 5. PLAY Playlist (Player Mode)                        |\n";
-    cout << "| 6. Exit                                               |\n";
+    cout << "|                                                       |\n";
+    cout << "| 9. Save Data to File (Save)                           |\n";
+    cout << "| 10. Load Data from File (Load)                        |\n";
+    cout << "|                                                       |\n";
+    cout << "| 12. Exit                                              |\n";
     cout << "+=======================================================+\n";
     cout << "Your choice: ";
 }
@@ -385,6 +461,19 @@ int main(){
     default:
     cout<<"invalid option.\n";
     system("pause");
+
+    case 9:{
+    cout<<"Saving data to 'data.txt'..\n";
+    manager.saveALL("data.txt");
+    system("pause");
+    break;
+    }
+    case 10:{
+    cout<<"loading data from 'data.txt'..\n";
+    manager.loadALL("data.txt");
+    system("pause");
+    break;
+    }
 
     }
       
