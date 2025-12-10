@@ -167,6 +167,67 @@ public:
         current->data->stop();
         }
       }
+
+      bool removeSong(int index) {
+        if (head == NULL || index < 1) return false;
+
+        Node* node = head;
+        int count = 1;
+
+        while (node && count < index) {
+            node = node->next;
+            count++;
+        }
+
+        if (!node) return false; 
+
+        if (current == node) {
+            current->data->stop();
+            current = NULL; 
+        }
+
+        
+        if (node->prev) node->prev->next = node->next;
+        else head = node->next; 
+
+        if (node->next) node->next->prev = node->prev;
+        else tail = node->prev;
+
+        delete node;
+        return true;
+    }
+
+    bool swapSongs(int i, int j) {
+        if (i == j) return true;
+
+        Node *a = head, *b = head;
+        int c1 = 1, c2 = 1;
+
+        while (a && c1 < i) { a = a->next; c1++; }
+        while (b && c2 < j) { b = b->next; c2++; }
+
+        if (!a || !b) return false; 
+
+        Audio* temp = a->data;
+        a->data = b->data;
+        b->data = temp;
+
+        return true;
+    }
+    
+    ~PlayList() {
+        Node* temp = head;
+        while (temp) {
+            Node* next = temp->next;
+            delete temp;
+            temp = next;
+        }
+    }
+
+
+
+
+
       void saveSongsToFile(ofstream& file){
         Node* temp=head;
         while (temp)
@@ -242,7 +303,35 @@ public:
             }
             return NULL;
           }
+          
+          bool removePlaylist(int index) {
+        if (head == NULL || index < 1) return false;
 
+        playlistnode* temp = head;
+        int count = 1;
+
+        while (temp && count < index) {
+            temp = temp->next;
+            count++;
+        }
+
+        if (!temp) return false; 
+
+        if (temp->prev) temp->prev->next = temp->next;
+        else head = temp->next; 
+
+        if (temp->next) temp->next->prev = temp->prev;
+        else tail = temp->prev; 
+
+        delete temp->data; 
+        delete temp;       
+        
+        cout << "\n[SUCCESS] Playlist removed.\n";
+        return true;
+    }
+
+
+        
           void saveALL(string filename){
           ofstream file(filename);
           playlistnode*temp=head;
@@ -314,8 +403,11 @@ public:
     cout << "| 4. Display Songs in a Playlist                        |\n";
     cout << "| 5. PLAY Playlist (Player Mode)                        |\n";
     cout << "|                                                       |\n";
+    cout << "| 6. Remove Audio from an exisiting playlist            |\n";
+    cout << "| 7. Update the order of exisiting playlist             |\n";
     cout << "| 9. Save Data to File (Save)                           |\n";
     cout << "| 10. Load Data from File (Load)                        |\n";
+    cout << "| 11. Remove an exisiting playlist                      |\n";
     cout << "|                                                       |\n";
     cout << "| 12. Exit                                              |\n";
     cout << "+=======================================================+\n";
@@ -390,7 +482,7 @@ int main(){
       continue;
     }
 
-    if (choice==6)
+    if (choice==12)
     {
     break;
     }
@@ -462,6 +554,49 @@ int main(){
     cout<<"invalid option.\n";
     system("pause");
 
+   case 6: {
+        cout << "\nSelect Playlist ID to remove song from: ";
+        manager.displayAll();
+        int pid; cin >> pid;
+        PlayList* pl = manager.getplaylistIndex(pid);
+        if (pl) {
+            pl->displaysong();
+            cout << "Enter Song Number to Remove: ";
+            int sid; cin >> sid;
+            if (pl->removeSong(sid)) {
+                cout << "Song removed successfully.\n";
+            } else {
+                cout << "Failed to remove song (Invalid ID).\n";
+            }
+        } else {
+            cout << "Invalid Playlist ID.\n";
+        }
+        system("pause");
+        break;
+    } 
+
+    case 7: {
+        cout << "\nSelect Playlist ID to swap songs: ";
+        manager.displayAll();
+        int pid; cin >> pid;
+        PlayList* pl = manager.getplaylistIndex(pid);
+        if (pl) {
+            pl->displaysong();
+            int id1, id2;
+            cout << "Enter First Song ID: "; cin >> id1;
+            cout << "Enter Second Song ID: "; cin >> id2;
+            if (pl->swapSongs(id1, id2)) {
+                cout << "Songs Swapped Successfully.\n";
+            } else {
+                cout << "Invalid Song IDs.\n";
+            }
+        } else {
+            cout << "Invalid Playlist ID.\n";
+        }
+        system("pause");
+        break;
+    }
+
     case 9:{
     cout<<"Saving data to 'data.txt'..\n";
     manager.saveALL("data.txt");
@@ -474,6 +609,21 @@ int main(){
     system("pause");
     break;
     }
+ 
+    case 11: {
+        cout << "\n--- DELETE PLAYLIST ---\n";
+        manager.displayAll();
+        cout << "Enter Playlist ID to delete: ";
+        int id; cin >> id;
+        if (manager.removePlaylist(id)) {
+        } else {
+            cout << "Invalid Playlist ID.\n";
+        }
+        system("pause");
+        break;
+    }
+
+
 
     }
       
