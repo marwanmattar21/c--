@@ -171,29 +171,29 @@ public:
       bool removeSong(int index) {
         if (head == NULL || index < 1) return false;
 
-        Node* node = head;
+        Node* temp= head;
         int count = 1;
 
-        while (node && count < index) {
-            node = node->next;
+        while (temp && count < index) {
+            temp = temp->next;
             count++;
         }
 
-        if (!node) return false; 
+        if (!temp) return false; 
 
-        if (current == node) {
+        if (current == temp) {
             current->data->stop();
             current = NULL; 
         }
 
         
-        if (node->prev) node->prev->next = node->next;
-        else head = node->next; 
+        if (temp->prev) temp->prev->next = temp->next;
+        else head = temp->next; 
 
-        if (node->next) node->next->prev = node->prev;
-        else tail = node->prev;
+        if (temp->next) temp->next->prev = temp->prev;
+        else tail = temp->prev;
 
-        delete node;
+        delete temp;
         return true;
     }
 
@@ -436,19 +436,19 @@ public:
                 int arrowCode = _getch(); 
                 
                 switch (arrowCode) {
-                 case 77: 
+                 case 77: // right arrow
                         cout << " [Next] ";
                         pl->nextsong(); 
                         break;   
-                    case 75: 
+                    case 75: //left arrow
                         cout << " [Prev] ";
                         pl->playprev(); 
                         break;   
-                    case 72: 
+                    case 72: //up arrow
                         pl->pausecurrent(); 
                         cout << "\n(Paused)"; 
                         break; 
-                    case 80:  
+                    case 80:  //down arrow
                         pl->resumecurrent(); 
                         cout << "\n(Resumed)"; 
                         break;
@@ -548,11 +548,10 @@ int main(){
       if (pl){
         playermode(pl);
       }
+      system("pause");
       break;
     }
-    default:
-    cout<<"invalid option.\n";
-    system("pause");
+    
 
    case 6: {
         cout << "\nSelect Playlist ID to remove song from: ";
@@ -622,15 +621,13 @@ int main(){
         system("pause");
         break;
     }
-
-
+    default:
+    cout<<"invalid option.\n";
+    system("pause");
 
     }
-      
     
    }
    
-   
-    
     return 0;
 } 
