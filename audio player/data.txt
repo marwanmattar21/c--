@@ -1,0 +1,5 @@
+PLAYLIST:Mix tape
+Song 1|test.mp3
+Song 2|test2.mp3
+Song 3|test3.mp3
+END
